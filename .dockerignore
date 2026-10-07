@@ -5,3 +5,4 @@ __pycache__/
 .git/
 .github/
 .pytest_cache/
+#checking if the jenkins poolling works and autotriggers jenkins build

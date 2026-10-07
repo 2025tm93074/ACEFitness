@@ -1,0 +1,64 @@
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+
+            steps {
+
+                git branch: 'main',
+                    url: 'https://github.com/YOUR_USERNAME/ACEest-Fitness-DevOps.git'
+            }
+        }
+
+
+        stage('Install Dependencies') {
+
+            steps {
+
+                sh '''
+                    python3 -m pip install -r requirements.txt
+                '''
+            }
+        }
+
+
+        stage('Run Tests') {
+
+            steps {
+
+                sh '''
+                    python3 -m pytest -v
+                '''
+            }
+        }
+
+
+        stage('Build Docker Image') {
+
+            steps {
+
+                sh '''
+                    docker build -t aceest-fitness:jenkins .
+                '''
+            }
+        }
+
+    }
+
+
+    post {
+
+        success {
+
+            echo 'ACEest Fitness build completed successfully.'
+        }
+
+        failure {
+
+            echo 'ACEest Fitness build failed.'
+        }
+    }
+}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ACEest Fitness & Gym</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>ACEest Fitness & Gym </h1>
+        <p>Fitness management dashboard for coaches</p>
+    </header>
+
+
+    <!-- ADD CLIENT -->
+
+    <section class="card">
+
+        <h2>Add New Client</h2>
+
+        <form id="clientForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="name">Name</label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="John Doe"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="age">Age</label>
+
+                    <input
+                        type="number"
+                        id="age"
+                        min="1"
+                        placeholder="25"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+
+                    <input
+                        type="number"
+                        id="height"
+                        min="1"
+                        step="0.1"
+                        placeholder="175"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+
+                    <input
+                        type="number"
+                        id="weight"
+                        min="1"
+                        step="0.1"
+                        placeholder="70"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="program">Fitness Program</label>
+
+                    <select id="program" required>
+
+                        {% for key, program in programs.items() %}
+
+                        <option value="{{ key }}">
+                            {{ program.name }}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+            </div>
+
+
+            <button type="submit">
+                Add Client
+            </button>
+
+        </form>
+
+
+        <div id="message"></div>
+
+    </section>
+
+
+    <!-- CLIENT LIST -->
+
+    <section class="card">
+
+        <div class="section-header">
+
+            <h2>Clients</h2>
+
+            <button
+                class="secondary-button"
+                onclick="loadClients()"
+            >
+                Refresh
+            </button>
+
+        </div>
+
+
+        <div id="clientsContainer">
+
+            <p>Loading clients...</p>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+    // ---------------------------------------------------------
+    // LOAD CLIENTS
+    // ---------------------------------------------------------
+
+    async function loadClients() {
+
+        const container =
+            document.getElementById("clientsContainer");
+
+        try {
+
+            const response =
+                await fetch("/clients");
+
+            const clients =
+                await response.json();
+
+
+            if (clients.length === 0) {
+
+                container.innerHTML =
+                    "<p>No clients have been added yet.</p>";
+
+                return;
+            }
+
+
+            let html = `
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Height</th>
+                            <th>Weight</th>
+                            <th>Program</th>
+                            <th>Calories</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+            `;
+
+
+            clients.forEach(client => {
+
+                html += `
+                    <tr>
+
+                        <td>${client.id}</td>
+
+                        <td>
+                            <strong>${client.name}</strong>
+                        </td>
+
+                        <td>${client.age}</td>
+
+                        <td>${client.height} cm</td>
+
+                        <td>${client.weight} kg</td>
+
+                        <td>
+                            ${formatProgram(client.program)}
+                        </td>
+
+                        <td>
+                            ${client.calories} kcal
+                        </td>
+
+                    </tr>
+                `;
+
+            });
+
+
+            html += `
+                    </tbody>
+
+                </table>
+            `;
+
+
+            container.innerHTML = html;
+
+        }
+
+        catch (error) {
+
+            container.innerHTML =
+                "<p class='error'>Unable to load clients.</p>";
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    // ---------------------------------------------------------
+    // FORMAT PROGRAM NAME
+    // ---------------------------------------------------------
+
+    function formatProgram(program) {
+
+        const names = {
+
+            "fat_loss": "Fat Loss",
+
+            "muscle_gain": "Muscle Gain",
+
+            "beginner": "Beginner"
+
+        };
+
+        return names[program] || program;
+
+    }
+
+
+    // ---------------------------------------------------------
+    // ADD CLIENT
+    // ---------------------------------------------------------
+
+    document
+        .getElementById("clientForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+
+            const message =
+                document.getElementById("message");
+
+
+            const client = {
+
+                name:
+                    document.getElementById("name").value,
+
+                age:
+                    document.getElementById("age").value,
+
+                height:
+                    document.getElementById("height").value,
+
+                weight:
+                    document.getElementById("weight").value,
+
+                program:
+                    document.getElementById("program").value
+
+            };
+
+
+            try {
+
+                const response = await fetch(
+                    "/clients",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(client)
+                    }
+                );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    message.innerHTML =
+                        `<p class="error">
+                            ${result.error}
+                        </p>`;
+
+                    return;
+                }
+
+
+                message.innerHTML =
+                    `<p class="success">
+                        Client added successfully!
+                        Daily calories: ${result.calories} kcal
+                    </p>`;
+
+
+                document
+                    .getElementById("clientForm")
+                    .reset();
+
+
+                await loadClients();
+
+            }
+
+            catch (error) {
+
+                message.innerHTML =
+                    `<p class="error">
+                        Something went wrong.
+                    </p>`;
+
+                console.error(error);
+
+            }
+
+        });
+
+
+    // ---------------------------------------------------------
+    // LOAD CLIENTS WHEN PAGE OPENS
+    // ---------------------------------------------------------
+
+    loadClients();
+
+</script>
+
+</body>
+
+</html>

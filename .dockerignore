@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+*.db
+.git/
+.github/
+.pytest_cache/
+#checking if the jenkins poolling works and autotriggers jenkins build

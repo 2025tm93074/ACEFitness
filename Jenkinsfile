@@ -82,6 +82,34 @@ pipeline {
             }
         }
 
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        set -e
+
+                        docker tag aceest-fitness:build-${BUILD_NUMBER} \
+                            ${DOCKER_USER}/aceest-fitness:build-${BUILD_NUMBER}
+
+                        docker tag aceest-fitness:build-${BUILD_NUMBER} \
+                            ${DOCKER_USER}/aceest-fitness:latest
+
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" --password-stdin
+
+                        docker push ${DOCKER_USER}/aceest-fitness:build-${BUILD_NUMBER}
+                        docker push ${DOCKER_USER}/aceest-fitness:latest
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {

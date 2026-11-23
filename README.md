@@ -67,7 +67,7 @@ ACEest-Fitness-DevOps/
 - GitHub Actions
 ### Local Setup
 1. Clone the repository
-git clone https://github.com/2025tm93074/ACEest-Fitness-DevOps.git
+git clone https://github.com/2025tm93074/ACEFitness.git
 cd ACEest-Fitness-DevOps
 
 2. Install dependencies
